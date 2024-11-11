@@ -154,10 +154,68 @@ to interact  ;; turtle procedure
         set coopother-agg coopother-agg + 1
         ask myself [ set ptr ptr - cost-of-giving ]
         set ptr ptr + gain-of-receiving
+        ask myself [
+          set memory lput (list ticks [who] of myself "Positive") memory
+        ]
+        ask partner [
+          set memory lput (list ticks [who] of myself "Positive") memory
+        ]
       ]
       [
         set defother defother + 1
         set defother-agg defother-agg + 1
+        ask myself [
+          set memory lput (list ticks [who] of myself "Negative") memory
+        ]
+        ask partner [
+          set memory lput (list ticks [who] of myself "Negative") memory
+        ]
+      ]
+    ]
+    ;; iterate through all memories and share them with the partner
+    ;; given the global variables support that transaction
+    if share-positive-memories-same-color? [
+      ask myself [
+        let mems memory
+        let mycol color
+        for [mem mems] [
+          ifelse (item 2 mem) = "Positive" [
+            ask partner [ 
+              ifelse color = mycol [
+                if share-positive-memories-same-color? [
+                  if not member? mem memory [
+                    set memory lput mem memory
+                  ]
+                ]
+              ]
+              [
+                if share-positive-memories-other-color? [
+                  if not member? mem memory [
+                    set memory lput mem memory
+                  ]
+                ]
+              ]
+            ]
+          ]
+          [
+            ask partner [
+              ifelse color = mycol [
+                if share-negative-memories-same-color? [
+                  if not member? mem memory [
+                    set memory lput mem memory
+                  ]
+                ]
+              ]
+              [
+                if share-negative-memories-other-color? [
+                  if not member? mem memory [
+                    set memory lput mem memory
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
       ]
     ]
   ]
@@ -548,6 +606,65 @@ Circles cooperate with same color\nSquares defect with same color\nFilled-in sha
 11
 0.0
 0
+
+SWITCH
+325
+490
+573
+523
+share-positive-memories-same-color
+share-positive-memories-same-color
+1
+1
+-1000
+
+SWITCH
+582
+491
+834
+524
+share-negative-memories-same-color
+share-negative-memories-same-color
+1
+1
+-1000
+
+SLIDER
+321
+562
+495
+595
+memory-sharing-factor
+memory-sharing-factor
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
+SWITCH
+324
+526
+571
+559
+share-positive-memories-other-color
+share-positive-memories-other-color
+1
+1
+-1000
+
+SWITCH
+581
+527
+828
+560
+share-positive-memories-other-color
+share-positive-memories-other-color
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
