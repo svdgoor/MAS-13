@@ -13,26 +13,7 @@ file_extension = '.csv'
 file_path = folder + file + file_extension
 data = pd.read_csv(file_path, skiprows=6)
 
-
-# # Save the cleaned data to a new CSV file
-cleaned_file_path = folder + file + '_cleaned' + file_extension
-data.to_csv(cleaned_file_path, index=False)
-
-print(f"Cleaned data saved to {cleaned_file_path}")
-
-
-# Load the CSV file
-folder = 'experiments'
-# check all files ending in -table_cleaned and take the highest number
-file_path = max(
-    [file for file in os.listdir(folder)
-        if file.endswith('-table_cleaned.csv')],
-    key=lambda x: int(x.split('-')[0])
-)
-file_ext = '.csv'
 plot_folder = f'{folder}/{file_path}-img'
-data = pd.read_csv(folder + "/" + file_path + file_ext)
-
 os.makedirs(plot_folder, exist_ok=True)
 
 # Group by 'memory-satisfact' and take the average of each group
