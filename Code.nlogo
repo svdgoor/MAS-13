@@ -1,5 +1,5 @@
 ;; agents have a probability to reproduce and a strategy
-turtles-own [ ptr cooperate-with-same? cooperate-with-different? memory-positive ]
+turtles-own [ ptr cooperate-with-same? cooperate-with-different? memory-positive-same memory-positive-different ]
 
 globals [
   ;; the remaining variables support the replication of published experiments
@@ -78,7 +78,8 @@ to create-turtle  ;; patch procedure
     ;; determine the strategy for interacting with someone of a different color
     set cooperate-with-different? (random-float 1.0 < immigrant-chance-cooperate-with-different)
     ;; set the memory values to 0
-    set memory-positive memory-satisfact / 2
+    set memory-positive-same memory-satisfact / 2
+    set memory-positive-different memory-satisfact / 2
     ;; change the shape of the agent on the basis of the strategy
     update-shape
   ]
@@ -140,15 +141,15 @@ to interact  ;; turtle procedure
         ask myself [ set ptr ptr - cost-of-giving ]
         set ptr ptr + gain-of-receiving
         ;; Record positive interaction
-        ask myself [ set memory-positive min list memory-satisfact (memory-positive + 1) ]
-        ask partner [ set memory-positive min list memory-satisfact (memory-positive + 1) ]
+        ask myself [ set memory-positive-same min list memory-satisfact (memory-positive-same + 1) ]
+        ask partner [ set memory-positive-same min list memory-satisfact (memory-positive-same + 1) ]
       ]
       [
         set defother defother + 1
         set defother-agg defother-agg + 1
         ;; Record negative interaction
-        ask myself [ set memory-positive max list 0 (memory-positive - 1) ]
-        ask partner [ set memory-positive max list 0 (memory-positive - 1) ]
+        ask myself [ set memory-positive-same max list 0 (memory-positive-same - 1) ]
+        ask partner [ set memory-positive-same max list 0 (memory-positive-same - 1) ]
       ]
     ]
     if color != [color] of myself [
@@ -161,14 +162,14 @@ to interact  ;; turtle procedure
         ask myself [ set ptr ptr - cost-of-giving ]
         set ptr ptr + gain-of-receiving
         ;; Record positive interaction
-        ask myself [ set memory-positive min list memory-satisfact (memory-positive + 1) ]
-        ask partner [ set memory-positive min list memory-satisfact (memory-positive + 1) ]
+        ask myself [ set memory-positive-different min list memory-satisfact (memory-positive-different + 1) ]
+        ask partner [ set memory-positive-different min list memory-satisfact (memory-positive-different + 1) ]
       ][
         set defother defother + 1
         set defother-agg defother-agg + 1
         ;; Record negative interaction
-        ask myself [ set memory-positive max list 0 (memory-positive - 1) ]
-        ask partner [ set memory-positive max list 0 (memory-positive - 1) ]
+        ask myself [ set memory-positive-different max list 0 (memory-positive-different - 1) ]
+        ask partner [ set memory-positive-different max list 0 (memory-positive-different - 1) ]
       ]
     ]
   ]
@@ -194,7 +195,8 @@ end
 ;; modify the children of agents according to the mutation rate
 to mutate  ;; turtle procedure
   ;; Calculate the ratio of positive interactions
-  let positive-ratio memory-positive / max list 1 (memory-satisfact - memory-positive)
+  let positive-ratio-same memory-positive-same / max list 1 (memory-satisfact - memory-positive-same)
+  let positive-ratio-different memory-positive-different / max list 1 (memory-satisfact - memory-positive-different)
 
   ;; mutate the color using the normal mutation rate
   if random-float 1.0 < mutation-rate [
@@ -206,7 +208,7 @@ to mutate  ;; turtle procedure
   ;; mutate the strategy flags based on the ratio of positive interactions
   ;; Increase chance of defecting with same color if the positive ratio is low
   if random-float 1.0 < mutation-rate [
-    ifelse (positive-ratio < 0.5) [
+    ifelse (positive-ratio-same < 0.5) [
       set cooperate-with-same? false
     ] [
       set cooperate-with-same? true
@@ -215,7 +217,7 @@ to mutate  ;; turtle procedure
 
   ;; Increase chance of defecting with different color if the positive ratio is low
   if random-float 1.0 < mutation-rate [
-    ifelse (positive-ratio < 0.5) [
+    ifelse (positive-ratio-different < 0.5) [
       set cooperate-with-different? false
     ] [
       set cooperate-with-different? true
