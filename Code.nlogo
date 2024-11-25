@@ -1,4 +1,4 @@
-;; agents have a probablity to reproduce and a strategy
+;; agents have a probability to reproduce and a strategy
 turtles-own [ ptr cooperate-with-same? cooperate-with-different? memory-positive memory-negative ]
 
 globals [
@@ -77,9 +77,8 @@ to create-turtle  ;; patch procedure
     set cooperate-with-same? (random-float 1.0 < immigrant-chance-cooperate-with-same)
     ;; determine the strategy for interacting with someone of a different color
     set cooperate-with-different? (random-float 1.0 < immigrant-chance-cooperate-with-different)
-    ;; set the memory lists to empty
-    set memory-positive []
-    set memory-negative []
+    ;; set the memory values to 0
+    set memory-positive memory-satisfact / 2
     ;; change the shape of the agent on the basis of the strategy
     update-shape
   ]
@@ -109,10 +108,6 @@ to go
 
   ;; have all of the agents interact with other agents if they can
   ask turtles [ interact ]
-  ;; make turtles forget old memories
-  ask turtles [ forget-old-memories ]
-  ;; share memories with nearby turtles
-  ask turtles [ share-memories ]
   ;; now they reproduce
   ask turtles [ reproduce ]
   death           ;; kill some of the agents
@@ -145,15 +140,15 @@ to interact  ;; turtle procedure
         ask myself [ set ptr ptr - cost-of-giving ]
         set ptr ptr + gain-of-receiving
         ;; Record positive interaction
-        ask myself [ set memory-positive lput (list ticks [who] of partner interaction-type) memory-positive ]
-        ask partner [ set memory-positive lput (list ticks [who] of myself interaction-type) memory-positive ]
+        ask myself [ set memory-positive min list memory-satisfact (memory-positive + 1) ]
+        ask partner [ set memory-positive min list memory-satisfact (memory-positive + 1) ]
       ]
       [
         set defother defother + 1
         set defother-agg defother-agg + 1
         ;; Record negative interaction
-        ask myself [ set memory-negative lput (list ticks [who] of partner interaction-type) memory-negative ]
-        ask partner [ set memory-negative lput (list ticks [who] of myself interaction-type) memory-negative ]
+        ask myself [ set memory-positive max list 0 (memory-positive - 1) ]
+        ask partner [ set memory-positive max list 0 (memory-positive - 1) ]
       ]
     ]
     if color != [color] of myself [
@@ -166,14 +161,14 @@ to interact  ;; turtle procedure
         ask myself [ set ptr ptr - cost-of-giving ]
         set ptr ptr + gain-of-receiving
         ;; Record positive interaction
-        ask myself [ set memory-positive lput (list ticks [who] of partner interaction-type) memory-positive ]
-        ask partner [ set memory-positive lput (list ticks [who] of myself interaction-type) memory-positive ]
+        ask myself [ set memory-positive min list memory-satisfact (memory-positive + 1) ]
+        ask partner [ set memory-positive min list memory-satisfact (memory-positive + 1) ]
       ][
         set defother defother + 1
         set defother-agg defother-agg + 1
         ;; Record negative interaction
-        ask myself [ set memory-negative lput (list ticks [who] of partner interaction-type) memory-negative ]
-        ask partner [ set memory-negative lput (list ticks [who] of myself interaction-type) memory-negative ]
+        ask myself [ set memory-positive max list 0 (memory-positive - 1) ]
+        ask partner [ set memory-positive max list 0 (memory-positive - 1) ]
       ]
     ]
   ]
@@ -196,54 +191,10 @@ to reproduce  ;; turtle procedure
   ]
 end
 
-to forget-old-memories  ;; turtle procedure
-  let memory-threshold 100  ;; Define the threshold for forgetting old memories (e.g., 100 ticks)
-  set memory-positive filter [interaction -> first interaction >= ticks - memory-threshold] memory-positive
-  set memory-negative filter [interaction -> first interaction >= ticks - memory-threshold] memory-negative
-end
-
-to share-memories  ;; turtle procedure
-  let nearby-turtles turtles-on neighbors4
-  ask nearby-turtles [
-    ;; Share positive memories
-    if share-positive-memories-same-color and [color] of myself = color [
-      foreach memory-positive [mem ->
-        if not member? mem [memory-positive] of myself and random-float 1.0 < memory-sharing-factor [
-          set memory-positive lput mem memory-positive
-        ]
-      ]
-    ]
-    if share-positive-memories-other-color and [color] of myself != color [
-      foreach memory-positive [mem ->
-        if not member? mem [memory-positive] of myself and random-float 1.0 < memory-sharing-factor [
-          set memory-positive lput mem memory-positive
-        ]
-      ]
-    ]
-    ;; Share negative memories
-    if share-negative-memories-same-color and [color] of myself = color [
-      foreach memory-negative [mem ->
-        if not member? mem [memory-negative] of myself and random-float 1.0 < memory-sharing-factor [
-          set memory-negative lput mem memory-negative
-        ]
-      ]
-    ]
-    if share-negative-memories-other-color and [color] of myself != color [
-      foreach memory-negative [mem ->
-        if not member? mem [memory-negative] of myself and random-float 1.0 < memory-sharing-factor [
-          set memory-negative lput mem memory-negative
-        ]
-      ]
-    ]
-  ]
-end
-
 ;; modify the children of agents according to the mutation rate
 to mutate  ;; turtle procedure
-  ;; Calculate counts of positive and negative interactions
-  let positive-count length memory-positive
-  let negative-count length memory-negative
-  let total-interactions positive-count + negative-count
+  ;; Calculate the ratio of positive interactions
+  let positive-ratio memory-positive / max list 1 (memory-satisfact - memory-positive)
 
   ;; mutate the color using the normal mutation rate
   if random-float 1.0 < mutation-rate [
@@ -252,19 +203,19 @@ to mutate  ;; turtle procedure
       [ set color random-color ]
   ]
 
-  ;; mutate the strategy flags based on the counts of positive and negative interactions
-  ;; Increase chance of defecting with same color if there are more negative interactions with same color
+  ;; mutate the strategy flags based on the ratio of positive interactions
+  ;; Increase chance of defecting with same color if the positive ratio is low
   if random-float 1.0 < mutation-rate [
-    ifelse (negative-count > positive-count and random-float 1.0 < (negative-count / max list 1 total-interactions)) [
+    ifelse (positive-ratio < 0.5) [
       set cooperate-with-same? false
     ] [
       set cooperate-with-same? true
     ]
   ]
 
-  ;; Increase chance of defecting with different color if there are more negative interactions with different color
+  ;; Increase chance of defecting with different color if the positive ratio is low
   if random-float 1.0 < mutation-rate [
-    ifelse (negative-count > positive-count and random-float 1.0 < (negative-count / max list 1 total-interactions)) [
+    ifelse (positive-ratio < 0.5) [
       set cooperate-with-different? false
     ] [
       set cooperate-with-different? true
@@ -682,6 +633,21 @@ share-negative-memories-other-color
 0
 1
 -1000
+
+SLIDER
+498
+562
+670
+595
+memory-satisfact
+memory-satisfact
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
