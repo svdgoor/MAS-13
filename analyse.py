@@ -9,8 +9,7 @@ file = max(
         if file.endswith('-table.csv')],
     key=lambda x: int(x.split('-')[0])
 )
-file_extension = '.csv'
-file_path = folder + file + file_extension
+file_path = folder + file
 data = pd.read_csv(file_path, skiprows=6)
 
 plot_folder = f'{folder}/{file_path}-img'
