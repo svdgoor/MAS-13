@@ -35,7 +35,6 @@ for column in columns_to_plot:
     plt.xlabel('Memory Satisfact')
     plt.ylabel(column.replace('-', ' ').capitalize())
     plt.title(f'{column.replace("-", " ").capitalize()} vs Memory Satisfact')
-    # plt.xticks(ticks=grouped_data[main_column], labels=grouped_data[main_column])
     if '-percent' in column:
         plt.ylim(min(min(grouped_data[column]), 0) - 0.05,
                  max(max(grouped_data[column]), 1) + 0.05)
