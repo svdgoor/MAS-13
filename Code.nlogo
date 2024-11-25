@@ -989,7 +989,7 @@ setup-full repeat 150 [ go ]
   <experiment name="Memory Sharing Experiment" repetitions="10" runMetricsEveryStep="false">
     <setup>setup-empty</setup>
     <go>go</go>
-    <timeLimit steps="2000"/>
+    <timeLimit steps="1000"/>
     <metric>coopown-percent</metric>
     <metric>defother-percent</metric>
     <metric>consist-ethno-percent</metric>
@@ -1007,11 +1007,23 @@ setup-full repeat 150 [ go ]
     <enumeratedValueSet variable="memory-satisfact">
       <value value="0"/>
       <value value="1"/>
+      <value value="2"/>
       <value value="3"/>
+      <value value="4"/>
       <value value="5"/>
+      <value value="6"/>
+      <value value="7"/>
+      <value value="8"/>
+      <value value="9"/>
       <value value="10"/>
+      <value value="15"/>
+      <value value="20"/>
       <value value="25"/>
+      <value value="30"/>
+      <value value="40"/>
       <value value="50"/>
+      <value value="65"/>
+      <value value="80"/>
       <value value="100"/>
     </enumeratedValueSet>
   </experiment>
