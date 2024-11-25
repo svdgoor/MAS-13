@@ -1,5 +1,5 @@
-;; agents have a probablity to reproduce and a strategy
-turtles-own [ ptr cooperate-with-same? cooperate-with-different? ]
+;; agents have a probability to reproduce and a strategy
+turtles-own [ ptr cooperate-with-same? cooperate-with-different? memory-positive-same memory-positive-different ]
 
 globals [
   ;; the remaining variables support the replication of published experiments
@@ -77,6 +77,9 @@ to create-turtle  ;; patch procedure
     set cooperate-with-same? (random-float 1.0 < immigrant-chance-cooperate-with-same)
     ;; determine the strategy for interacting with someone of a different color
     set cooperate-with-different? (random-float 1.0 < immigrant-chance-cooperate-with-different)
+    ;; set the memory values to 0
+    set memory-positive-same memory-satisfact / 2
+    set memory-positive-different memory-satisfact / 2
     ;; change the shape of the agent on the basis of the strategy
     update-shape
   ]
@@ -122,42 +125,51 @@ to immigrate
 end
 
 to interact  ;; turtle procedure
-
-  ;; interact with Von Neumann neighborhood
-  ask turtles-on neighbors4 [
-    ;; the commands inside the ASK are written from the point of view
-    ;; of the agent being interacted with.  To refer back to the agent
-    ;; that initiated the interaction, we use the MYSELF primitive.
+  let partners turtles-on neighbors4
+  ask partners [
+    let partner myself
+    let interaction-type ""
     set meet meet + 1
     set meet-agg meet-agg + 1
-    ;; do one thing if the individual interacting is the same color as me
     if color = [color] of myself [
-      ;; record the fact the agent met someone of the own color
+      set interaction-type "same-color"
       set meetown meetown + 1
       set meetown-agg meetown-agg + 1
-      ;; if I cooperate then I reduce my PTR and increase my neighbors
-      if [cooperate-with-same?] of myself [
+      ifelse [cooperate-with-same?] of myself [
         set coopown coopown + 1
         set coopown-agg coopown-agg + 1
         ask myself [ set ptr ptr - cost-of-giving ]
         set ptr ptr + gain-of-receiving
+        ;; Record positive interaction
+        ask myself [ set memory-positive-same min list memory-satisfact (memory-positive-same + 1) ]
+        ask partner [ set memory-positive-same min list memory-satisfact (memory-positive-same + 1) ]
+      ]
+      [
+        set defother defother + 1
+        set defother-agg defother-agg + 1
+        ;; Record negative interaction
+        ask myself [ set memory-positive-same max list 0 (memory-positive-same - 1) ]
+        ask partner [ set memory-positive-same max list 0 (memory-positive-same - 1) ]
       ]
     ]
-    ;; if we are different colors we take a different strategy
     if color != [color] of myself [
-      ;; record stats on encounters
+      set interaction-type "different-color"
       set meetother meetother + 1
       set meetother-agg meetother-agg + 1
-      ;; if we cooperate with different colors then reduce our PTR and increase our neighbors
       ifelse [cooperate-with-different?] of myself [
         set coopother coopother + 1
         set coopother-agg coopother-agg + 1
         ask myself [ set ptr ptr - cost-of-giving ]
         set ptr ptr + gain-of-receiving
-      ]
-      [
+        ;; Record positive interaction
+        ask myself [ set memory-positive-different min list memory-satisfact (memory-positive-different + 1) ]
+        ask partner [ set memory-positive-different min list memory-satisfact (memory-positive-different + 1) ]
+      ][
         set defother defother + 1
         set defother-agg defother-agg + 1
+        ;; Record negative interaction
+        ask myself [ set memory-positive-different max list 0 (memory-positive-different - 1) ]
+        ask partner [ set memory-positive-different max list 0 (memory-positive-different - 1) ]
       ]
     ]
   ]
@@ -182,20 +194,36 @@ end
 
 ;; modify the children of agents according to the mutation rate
 to mutate  ;; turtle procedure
-  ;; mutate the color
+  ;; Calculate the ratio of positive interactions
+  let positive-ratio-same memory-positive-same / max list 1 (memory-satisfact - memory-positive-same)
+  let positive-ratio-different memory-positive-different / max list 1 (memory-satisfact - memory-positive-different)
+
+  ;; mutate the color using the normal mutation rate
   if random-float 1.0 < mutation-rate [
     let old-color color
     while [color = old-color]
       [ set color random-color ]
   ]
-  ;; mutate the strategy flags;
-  ;; use NOT to toggle the flag
+
+  ;; mutate the strategy flags based on the ratio of positive interactions
+  ;; Increase chance of defecting with same color if the positive ratio is low
   if random-float 1.0 < mutation-rate [
-    set cooperate-with-same? not cooperate-with-same?
+    ifelse (positive-ratio-same < 0.5) [
+      set cooperate-with-same? false
+    ] [
+      set cooperate-with-same? true
+    ]
   ]
+
+  ;; Increase chance of defecting with different color if the positive ratio is low
   if random-float 1.0 < mutation-rate [
-    set cooperate-with-different? not cooperate-with-different?
+    ifelse (positive-ratio-different < 0.5) [
+      set cooperate-with-different? false
+    ] [
+      set cooperate-with-different? true
+    ]
   ]
+
   ;; make sure the shape of the agent reflects its strategy
   update-shape
 end
@@ -548,6 +576,21 @@ Circles cooperate with same color\nSquares defect with same color\nFilled-in sha
 11
 0.0
 0
+
+SLIDER
+331
+487
+503
+520
+memory-satisfact
+memory-satisfact
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -943,6 +986,35 @@ setup-full repeat 150 [ go ]
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
+  <experiment name="Memory Sharing Experiment" repetitions="10" runMetricsEveryStep="false">
+    <setup>setup-empty</setup>
+    <go>go</go>
+    <timeLimit steps="2000"/>
+    <metric>coopown-percent</metric>
+    <metric>defother-percent</metric>
+    <metric>consist-ethno-percent</metric>
+    <metric>meetown-percent</metric>
+    <metric>coop-percent</metric>
+    <metric>last100coopown-percent</metric>
+    <metric>last100defother-percent</metric>
+    <metric>last100consist-ethno-percent</metric>
+    <metric>last100meetown-percent</metric>
+    <metric>last100coop-percent</metric>
+    <metric>cc-percent</metric>
+    <metric>cd-percent</metric>
+    <metric>dc-percent</metric>
+    <metric>dd-percent</metric>
+    <enumeratedValueSet variable="memory-satisfact">
+      <value value="0"/>
+      <value value="1"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="10"/>
+      <value value="25"/>
+      <value value="50"/>
+      <value value="100"/>
+    </enumeratedValueSet>
+  </experiment>
   <experiment name="Experiment 104" repetitions="10" runMetricsEveryStep="false">
     <setup>setup-empty</setup>
     <go>go</go>
