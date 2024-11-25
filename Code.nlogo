@@ -207,17 +207,33 @@ to share-memories  ;; turtle procedure
   ask nearby-turtles [
     ;; Share positive memories
     if share-positive-memories-same-color and [color] of myself = color [
-      set memory-positive memory-positive + ([memory-positive] of myself)
+      foreach memory-positive [mem ->
+        if not member? mem [memory-positive] of myself and random-float 1.0 < memory-sharing-factor [
+          set memory-positive lput mem memory-positive
+        ]
+      ]
     ]
     if share-positive-memories-other-color and [color] of myself != color [
-      set memory-positive memory-positive + ([memory-positive] of myself)
+      foreach memory-positive [mem ->
+        if not member? mem [memory-positive] of myself and random-float 1.0 < memory-sharing-factor [
+          set memory-positive lput mem memory-positive
+        ]
+      ]
     ]
     ;; Share negative memories
     if share-negative-memories-same-color and [color] of myself = color [
-      set memory-negative memory-negative + ([memory-negative] of myself)
+      foreach memory-negative [mem ->
+        if not member? mem [memory-negative] of myself and random-float 1.0 < memory-sharing-factor [
+          set memory-negative lput mem memory-negative
+        ]
+      ]
     ]
     if share-negative-memories-other-color and [color] of myself != color [
-      set memory-negative memory-negative + ([memory-negative] of myself)
+      foreach memory-negative [mem ->
+        if not member? mem [memory-negative] of myself and random-float 1.0 < memory-sharing-factor [
+          set memory-negative lput mem memory-negative
+        ]
+      ]
     ]
   ]
 end
@@ -1098,7 +1114,7 @@ setup-full repeat 150 [ go ]
     <enumeratedValueSet variable="memory-sharing-factor">
       <value value="0.1"/>
       <value value="0.5"/>
-      <value value="1.0"/>
+      <value value="1"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="Experiment 104" repetitions="10" runMetricsEveryStep="false">
