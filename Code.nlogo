@@ -986,7 +986,7 @@ setup-full repeat 150 [ go ]
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="Memory Sharing Experiment" repetitions="10" runMetricsEveryStep="false">
+  <experiment name="Memory Sharing Experiment" repetitions="20" runMetricsEveryStep="false">
     <setup>setup-empty</setup>
     <go>go</go>
     <timeLimit steps="1000"/>
@@ -1025,6 +1025,8 @@ setup-full repeat 150 [ go ]
       <value value="65"/>
       <value value="80"/>
       <value value="100"/>
+      <value value="200"/>
+      <value value="300"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="Experiment 104" repetitions="10" runMetricsEveryStep="false">
