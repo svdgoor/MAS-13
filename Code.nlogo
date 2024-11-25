@@ -1004,26 +1004,15 @@ setup-full repeat 150 [ go ]
     <metric>cd-percent</metric>
     <metric>dc-percent</metric>
     <metric>dd-percent</metric>
-    <enumeratedValueSet variable="share-positive-memories-same-color">
-      <value value="true"/>
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="share-positive-memories-other-color">
-      <value value="true"/>
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="share-negative-memories-same-color">
-      <value value="true"/>
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="share-negative-memories-other-color">
-      <value value="true"/>
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="memory-sharing-factor">
-      <value value="0.1"/>
-      <value value="0.5"/>
+    <enumeratedValueSet variable="memory-satisfact">
+      <value value="0"/>
       <value value="1"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="10"/>
+      <value value="25"/>
+      <value value="50"/>
+      <value value="100"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="Experiment 104" repetitions="10" runMetricsEveryStep="false">
