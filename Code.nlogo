@@ -186,17 +186,17 @@ to reproduce  ;; turtle procedure
       ;;  but mutate the child
       hatch 1 [
         move-to destination
-        mutate
+        mutate memory-positive-same memory-positive-different
       ]
     ]
   ]
 end
 
 ;; modify the children of agents according to the mutation rate
-to mutate  ;; turtle procedure
+to mutate [parent-memory-positive-same parent-memory-positive-different]  ;; turtle procedure
   ;; Calculate the ratio of positive interactions
-  let positive-ratio-same memory-positive-same / max list 1 (memory-satisfact - memory-positive-same)
-  let positive-ratio-different memory-positive-different / max list 1 (memory-satisfact - memory-positive-different)
+  let positive-ratio-same parent-memory-positive-same / max list 1 (memory-satisfact - parent-memory-positive-same)
+  let positive-ratio-different parent-memory-positive-different / max list 1 (memory-satisfact - parent-memory-positive-different)
 
   ;; mutate the color using the normal mutation rate
   if random-float 1.0 < mutation-rate [
