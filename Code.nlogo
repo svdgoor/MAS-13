@@ -208,19 +208,27 @@ to mutate [parent-memory-positive-same parent-memory-positive-different]  ;; tur
   ;; mutate the strategy flags based on the ratio of positive interactions
   ;; Increase chance of defecting with same color if the positive ratio is low
   if random-float 1.0 < mutation-rate [
-    ifelse (positive-ratio-same < 0.5) [
-      set cooperate-with-same? false
+    ifelse random-float 1.0 < use-memory-to-mutate [
+      ifelse (positive-ratio-same < 0.5) [
+        set cooperate-with-same? false
+      ] [
+        set cooperate-with-same? true
+      ]
     ] [
-      set cooperate-with-same? true
+      set cooperate-with-same? not cooperate-with-same?
     ]
   ]
 
   ;; Increase chance of defecting with different color if the positive ratio is low
   if random-float 1.0 < mutation-rate [
-    ifelse (positive-ratio-different < 0.5) [
-      set cooperate-with-different? false
+    ifelse random-float 1.0 < use-memory-to-mutate [
+      ifelse (positive-ratio-different < 0.5) [
+        set cooperate-with-different? false
+      ] [
+        set cooperate-with-different? true
+      ]
     ] [
-      set cooperate-with-different? true
+      set cooperate-with-different? not cooperate-with-different?
     ]
   ]
 
@@ -588,6 +596,21 @@ memory-satisfact
 100
 50.0
 1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+553
+514
+728
+547
+use-memory-to-mutate
+use-memory-to-mutate
+0
+1
+0.0
+0.1
 1
 NIL
 HORIZONTAL
@@ -986,7 +1009,7 @@ setup-full repeat 150 [ go ]
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="Memory Sharing Experiment" repetitions="20" runMetricsEveryStep="false">
+  <experiment name="Memory Sharing Experiment" repetitions="10" runMetricsEveryStep="false">
     <setup>setup-empty</setup>
     <go>go</go>
     <timeLimit steps="1000"/>
@@ -1007,26 +1030,20 @@ setup-full repeat 150 [ go ]
     <enumeratedValueSet variable="memory-satisfact">
       <value value="0"/>
       <value value="1"/>
-      <value value="2"/>
-      <value value="3"/>
-      <value value="4"/>
       <value value="5"/>
-      <value value="6"/>
-      <value value="7"/>
-      <value value="8"/>
-      <value value="9"/>
-      <value value="10"/>
-      <value value="15"/>
       <value value="20"/>
-      <value value="25"/>
-      <value value="30"/>
-      <value value="40"/>
       <value value="50"/>
-      <value value="65"/>
-      <value value="80"/>
       <value value="100"/>
-      <value value="200"/>
       <value value="300"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="use-memory-to-mutate">
+      <value value="0"/>
+      <value value="0.1"/>
+      <value value="0.3"/>
+      <value value="0.5"/>
+      <value value="0.7"/>
+      <value value="0.9"/>
+      <value value="1"/>
     </enumeratedValueSet>
   </experiment>
   <experiment name="Experiment 104" repetitions="10" runMetricsEveryStep="false">
