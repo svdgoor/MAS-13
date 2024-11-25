@@ -38,7 +38,7 @@ for column in percentage_columns:
             grouped_data['memory-satisfact'] == memory_satisfact
         ]
         plt.plot(subset['use-memory-to-mutate'], subset[column], marker='o',
-                 linestyle='-', label=f'Memory Satisfact {memory_satisfact}')
+                 linestyle='-', label=memory_satisfact)
     plt.xlabel('Use Memory to Mutate')
     plt.ylabel(column.replace('-', ' ').capitalize())
     plt.title(f'{column.replace("-", " ").capitalize()} \
@@ -49,9 +49,11 @@ for column in percentage_columns:
 
     # Save the plot to a file
     plot_file_path = f'{plot_folder}/{column}_vs_use_memory_to_mutate.png'
+
+    # Save
     plt.savefig(plot_file_path)
 
     # Show the plot in the console
-    plt.show()
+    # plt.show()
 
     print(f"Plot saved to {plot_file_path}")
