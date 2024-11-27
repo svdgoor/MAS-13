@@ -50,6 +50,8 @@ to initialize-variables
   set meet-agg 0
   set coopown 0
   set coopown-agg 0
+  set defown 0
+  set defown-agg 0
   set defother 0
   set defother-agg 0
   set meetother 0
@@ -145,8 +147,8 @@ to interact  ;; turtle procedure
         ask partner [ set memory-positive-same min list memory-satisfact (memory-positive-same + 1) ]
       ]
       [
-        set defother defother + 1
-        set defother-agg defother-agg + 1
+        set defown defown + 1
+        set defown-agg defown-agg + 1
         ;; Record negative interaction
         ask myself [ set memory-positive-same max list 0 (memory-positive-same - 1) ]
         ask partner [ set memory-positive-same max list 0 (memory-positive-same - 1) ]
@@ -184,9 +186,11 @@ to reproduce  ;; turtle procedure
     if destination != nobody [
       ;; if the location exists hatch a copy of the current turtle in the new location
       ;;  but mutate the child
+      let parent-memory-positive-same memory-positive-same
+      let parent-memory-positive-different memory-positive-same
       hatch 1 [
         move-to destination
-        mutate memory-positive-same memory-positive-different
+        mutate parent-memory-positive-same parent-memory-positive-different
       ]
     ]
   ]
@@ -195,8 +199,10 @@ end
 ;; modify the children of agents according to the mutation rate
 to mutate [parent-memory-positive-same parent-memory-positive-different]  ;; turtle procedure
   ;; Calculate the ratio of positive interactions
-  let positive-ratio-same parent-memory-positive-same / max list 1 (memory-satisfact - parent-memory-positive-same)
-  let positive-ratio-different parent-memory-positive-different / max list 1 (memory-satisfact - parent-memory-positive-different)
+  set memory-positive-same parent-memory-positive-same
+  set memory-positive-different parent-memory-positive-different
+  let positive-ratio-same memory-positive-different / max list 1 (memory-satisfact - parent-memory-positive-same)
+  let positive-ratio-different memory-positive-different / max list 1 (memory-satisfact - parent-memory-positive-different)
 
   ;; mutate the color using the normal mutation rate
   if random-float 1.0 < mutation-rate [
@@ -601,15 +607,15 @@ NIL
 HORIZONTAL
 
 SLIDER
-553
-514
-728
-547
+509
+487
+684
+520
 use-memory-to-mutate
 use-memory-to-mutate
 0
 1
-0.0
+1.0
 0.1
 1
 NIL
